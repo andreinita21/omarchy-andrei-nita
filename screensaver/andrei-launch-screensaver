@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# Starts the ANDREI NITA screensaver on every monitor.
+#
+# Runs Omarchy's own launcher (omarchy-launch-screensaver) with a single change:
+# each terminal it opens runs andrei-screensaver instead of omarchy-screensaver.
+# Everything else (terminal detection, per-monitor windows, the screensaver-off
+# toggle, `force`) stays Omarchy's, so launcher fixes from updates still apply.
+# If a future Omarchy changes that line, this falls back to the stock screensaver.
+
+launcher="${OMARCHY_PATH:-/usr/share/omarchy}/bin/omarchy-launch-screensaver"
+[[ -r $launcher ]] || { echo "andrei-launch-screensaver: $launcher not found" >&2; exit 1; }
+
+grep -q -- '-e omarchy-screensaver' "$launcher" || exec "$launcher" "$@"
+exec bash <(sed 's/-e omarchy-screensaver/-e andrei-screensaver/g' "$launcher") "$@"

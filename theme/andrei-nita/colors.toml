@@ -1,0 +1,37 @@
+mode = "dark"
+
+accent = "#9d4edd"
+selection = "#2e1065"
+muted = "#4c2a85"
+
+# Violet -> purple -> fuchsia. Drives window borders and, through the shell's
+# hyprland.active-border token, popups, notifications, menus and polkit.
+hyprland_active_border = "rgba(7c3aedff) rgba(9d4eddff) rgba(c026d3ff) 45deg"
+hyprland_inactive_border = "rgba(2e1065aa)"
+
+# OLED black.
+background = "#000000"
+dark_background = "#000000"
+darker_background = "#000000"
+lighter_background = "#140d22"
+
+foreground = "#e6dcff"
+dark_foreground = "#8a7aa8"
+light_foreground = "#d4c4f5"
+bright_foreground = "#f7f2ff"
+
+red = "#ff6b9a"
+yellow = "#f5d38a"
+orange = "#ffab7a"
+green = "#a8e6b4"
+cyan = "#8fd8f0"
+blue = "#8b9cff"
+magenta = "#a855f7"
+brown = "#6b4a5a"
+
+bright_red = "#ff8fb3"
+bright_yellow = "#ffe3a8"
+bright_green = "#c2f5cc"
+bright_cyan = "#b0e8ff"
+bright_blue = "#aab7ff"
+bright_magenta = "#d946ef"

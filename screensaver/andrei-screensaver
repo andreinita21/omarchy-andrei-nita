@@ -1,0 +1,118 @@
+#!/bin/bash
+
+# Omarchy's screensaver loop (omarchy-screensaver) with the ANDREI NITA palette:
+# the same random ttfx effects, but every effect gets explicit purple/pink
+# colors instead of ttfx's defaults. Started by andrei-launch-screensaver.
+
+# Every effect finishes on the wallpaper gradient, left to right.
+final=(--final-gradient-stops 7c3aed 9d4edd c026d3 --final-gradient-direction horizontal)
+
+# Per-effect colors: deep violet 2e1065/5b21b6, violet 7c3aed, purple 9d4edd,
+# fuchsia c026d3, pink ec4899 and hot pink f472b6 for highlights and sparks.
+# Nothing lighter than f472b6: pale tints read as white on low-end panels.
+declare -A palette=(
+  [beams]="--beam-gradient-stops f472b6 c026d3 7c3aed"
+  [binarypath]="--binary-colors 5b21b6 7c3aed 9d4edd"
+  [blackhole]="--blackhole-color f472b6 --star-colors 7c3aed 9d4edd c026d3 ec4899 f472b6"
+  [bouncyballs]="--ball-colors 7c3aed c026d3 ec4899"
+  [bubbles]="--bubble-colors 7c3aed 9d4edd c026d3 --pop-color f472b6"
+  [burn]="--starting-color 2e1065 --burn-colors f472b6 ec4899 c026d3 9d4edd 7c3aed 5b21b6 2e1065"
+  [colorshift]="--gradient-stops 7c3aed c026d3 ec4899 9d4edd"
+  [crumble]=""
+  [decrypt]="--ciphertext-colors 5b21b6 7c3aed c026d3"
+  [errorcorrect]="--error-color ec4899 --correct-color 9d4edd"
+  [expand]=""
+  [fireworks]="--firework-colors 7c3aed 9d4edd c026d3 ec4899 f472b6"
+  [highlight]=""
+  [laseretch]="--cool-gradient-stops 7c3aed 5b21b6 --laser-gradient-stops f472b6 c026d3 --spark-gradient-stops f472b6 c026d3 5b21b6"
+  [matrix]="--highlight-color f472b6 --rain-color-gradient 2e1065 5b21b6 7c3aed 9d4edd"
+  [middleout]="--starting-color f472b6"
+  [orbittingvolley]=""
+  [overflow]="--overflow-gradient-stops 5b21b6 7c3aed 9d4edd"
+  [pour]="--starting-color f472b6"
+  [print]=""
+  [rain]="--rain-colors 5b21b6 7c3aed 9d4edd c026d3 ec4899"
+  [randomsequence]=""
+  [rings]="--ring-colors 7c3aed c026d3 ec4899"
+  [scattered]=""
+  [slice]=""
+  [slide]=""
+  [smoke]="--starting-color 7c3aed --smoke-gradient-stops 2e1065 5b21b6 9d4edd"
+  [spotlights]=""
+  [spray]=""
+  [swarm]="--base-color 7c3aed c026d3 --flash-color f472b6"
+  [sweep]=""
+  [synthgrid]="--grid-gradient-stops 5b21b6 c026d3 --text-gradient-stops 7c3aed 9d4edd c026d3"
+  [thunderstorm]="--lightning-color f472b6 --glowing-text-color f472b6 --spark-glow-color ec4899"
+  [unstable]="--unstable-color ec4899"
+  [vhstape]="--glitch-line-colors 7c3aed c026d3 ec4899 --glitch-wave-colors 9d4edd c026d3 --noise-colors 2e1065 5b21b6 7c3aed 9d4edd"
+  [waves]="--wave-gradient-stops 5b21b6 7c3aed 9d4edd c026d3 ec4899 f472b6"
+  [wipe]=""
+)
+effects=("${!palette[@]}")
+
+# ANDREI_SCREENSAVER_EFFECTS="beams waves" limits the random pick to those effects.
+if [[ -n ${ANDREI_SCREENSAVER_EFFECTS:-} ]]; then
+  read -r -a wanted <<<"$ANDREI_SCREENSAVER_EFFECTS"
+  effects=()
+  for effect in "${wanted[@]}"; do
+    [[ -v "palette[$effect]" ]] && effects+=("$effect")
+  done
+  (( ${#effects[@]} )) || effects=("${!palette[@]}")
+fi
+
+effect_args() {
+  local effect=$1
+  local -a args
+  read -r -a args <<<"${palette[$effect]}"
+  # synthgrid colors its text through --text-gradient-stops and has no final gradient.
+  [[ $effect == synthgrid ]] || args+=("${final[@]}")
+  printf '%s\n' "$effect" "${args[@]}"
+}
+
+screensaver_in_focus() {
+  hyprctl activewindow -j | jq -e '.class == "org.omarchy.screensaver"' >/dev/null 2>&1
+}
+
+exit_screensaver() {
+  hyprctl eval 'hl.config({ cursor = { invisible = false } })' &>/dev/null || hyprctl keyword cursor:invisible false &>/dev/null || true
+  pkill -x ttfx 2>/dev/null
+  pkill -f '[o]rg.omarchy.screensaver' 2>/dev/null
+  exit 0
+}
+
+# Exit the screensaver on signals and input from keyboard and mouse
+trap exit_screensaver SIGINT SIGTERM SIGHUP SIGQUIT
+
+printf '\033]11;rgb:00/00/00\007'  # Set background color to black
+
+hyprctl eval 'hl.config({ cursor = { invisible = true } })' &>/dev/null || hyprctl keyword cursor:invisible true &>/dev/null
+
+tty=$(tty 2>/dev/null)
+
+# Terminals allocate the pty at the default 80x24 and only resize it once the
+# compositor has told the window how big it is. ttfx measures the terminal once,
+# at startup, so starting it before the resize lands sizes an 80x24 canvas and
+# paints it into the corner of a fullscreen window.
+wait_for_terminal_resize() {
+  local deadline=$((SECONDS + 2))
+  while ((SECONDS < deadline)) && [[ $(stty size 2>/dev/null) == "24 80" ]]; do
+    sleep 0.02
+  done
+}
+
+wait_for_terminal_resize
+
+while true; do
+  mapfile -t effect < <(effect_args "${effects[RANDOM % ${#effects[@]}]}")
+
+  ttfx -i ~/.config/omarchy/branding/screensaver.txt \
+    --frame-rate 120 --canvas-width 0 --canvas-height 0 --reuse-canvas --anchor-canvas c --anchor-text c \
+    --no-eol --no-restore-cursor "${effect[@]}" &
+
+  while pgrep -t "${tty#/dev/}" -x ttfx >/dev/null; do
+    if read -n1 -t 1 || ! screensaver_in_focus; then
+      exit_screensaver
+    fi
+  done
+done

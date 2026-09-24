@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "andrei.lock",
+  "name": "ANDREI NITA Lock Screen",
+  "version": "1.0.0",
+  "author": "Nita Andrei",
+  "description": "OLED-black session lock with the ANDREI NITA block-art logo and a violet-to-fuchsia gradient password field. Built on Omarchy's lock screen: same password and fingerprint PAM flows.",
+  "omarchy": {
+    "capabilities": [
+      "authentication"
+    ],
+    "clonedFrom": "omarchy.lock"
+  },
+  "kinds": [
+    "service"
+  ],
+  "keepLoaded": true,
+  "entryPoints": {
+    "service": "Service.qml"
+  }
+}
