@@ -11,7 +11,7 @@ disk-unlock screen at boot.
 
 | Piece | What you get | Folder |
 | --- | --- | --- |
-| **Theme** | `andrei-nita`: true-black background, gradient window borders, deep purple accents, the logo wallpaper, and Chromium in Chrome's classic purple | [`theme/`](theme/andrei-nita) |
+| **Theme** | `andrei-nita`: true-black background, gradient window borders, deep purple accents, the logo wallpaper, and a dark purple Chromium | [`theme/`](theme/andrei-nita) |
 | **Lock screen** | Replaces Omarchy's lock: the glowing logo above a gradient-bordered password field. Password and fingerprint unlock work exactly as before | [`lockscreen/`](lockscreen/andrei.lock) |
 | **Screensaver** | Omarchy's animated screensaver showing the logo in purples and pinks, across all 37 effects | [`screensaver/`](screensaver) |
 | **Boot screen** | The Plymouth disk-encryption prompt with the same logo and a purple password box | [`boot/`](boot) |
@@ -89,13 +89,12 @@ If you have a keybinding that runs `omarchy-launch-screensaver`, point it at
 Neovim, browser, keyboard-backlight and shell colors from it with its own
 templates. `hyprland_active_border` holds the three-stop gradient.
 
-`chromium.theme` is the exception. Omarchy would seed Chromium from the
+`chromium.the`chromium.theme` is the exception. Omarchy would seed Chromium from the
 background, which here is pure black and gives a black browser. Instead it
-uses Chrome's own **Dark purple** preset, `rgb(91, 54, 137)` / `#5b3689`,
-the classic purple from Chrome's color picker. Omarchy applies it through
-Chromium's `BrowserThemeColor` policy, so Chrome, Brave and Edge pick it up too.
-
-### Lock screen
+uses `rgb(35, 28, 47)` / `#231c2f`, a dark violet that gives a dark purple tab
+strip with a lighter violet toolbar. Omarchy applies it through Chromium's
+`BrowserThemeColor` policy, so Chrome, Brave and Edge pick it up too.
+een
 
 `andrei.lock` is a clone of Omarchy's `omarchy.lock` plugin. `Service.qml`,
 which handles the session lock and the password and fingerprint PAM flows,
