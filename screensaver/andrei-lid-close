@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Lid closed: run Omarchy's handling (lock + clamshell), then, when Stay Awake
+# (the coffee toggle) is on, blank the laptop panel. In that mode andrei.idle
+# holds a handle-lid-switch inhibitor, so logind does not suspend and the
+# machine keeps running with the screen off.
+
+omarchy-system-lid-close
+
+if [[ -f $HOME/.local/state/omarchy/indicators/stay-awake ]] && omarchy-hw-laptop-closed; then
+  internal=$(omarchy-hyprland-monitor-laptop)
+  [[ $internal =~ ^[A-Za-z0-9._-]+$ ]] || exit 0
+  # The lock screen can wake the display as it comes up; blank after it settles.
+  sleep 1
+  hyprctl dispatch "hl.dsp.dpms({ action = \"disable\", monitor = \"$internal\" })" >/dev/null 2>&1 || true
+fi

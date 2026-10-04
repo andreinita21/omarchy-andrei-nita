@@ -122,8 +122,19 @@ So there are three parts:
 - **`andrei-launch-screensaver`** runs Omarchy's own launcher with one line
   changed, so it starts `andrei-screensaver`. Terminal detection, one window
   per monitor and the screensaver-off toggle all stay Omarchy's.
-- **`andrei.idle`** is Omarchy's idle service with a one-line change: it
-  starts `andrei-launch-screensaver`.
+- **`andrei.idle`** is Omarchy's idle service with two changes: it starts
+  `andrei-launch-screensaver`, and while Stay Awake (the coffee toggle) is on
+  it holds a logind `handle-lid-switch` inhibitor.
+
+### Stay Awake with the lid closed
+
+With Stay Awake on, closing the lid locks the session and blanks the laptop
+panel, but the machine keeps running (long builds, AI agents) instead of
+suspending. With it off, the lid suspends as usual. The installer binds the
+lid switch to `andrei-lid-close` / `andrei-lid-open` in
+`~/.config/hypr/bindings.lua`; they run Omarchy's own lid handling and add the
+panel blanking. This works on battery too, so turn Stay Awake off before
+putting the laptop in a bag.
 
 To limit the random pick to effects you like:
 
@@ -163,13 +174,15 @@ Other places to change colors:
 omarchy theme set tokyo-night                  # or any other theme
 omarchy plugin remove andrei.lock              # restores Omarchy's lock
 omarchy plugin remove andrei.idle              # restores Omarchy's idle service
-rm ~/.local/bin/andrei-screensaver ~/.local/bin/andrei-launch-screensaver
+rm ~/.local/bin/andrei-screensaver ~/.local/bin/andrei-launch-screensaver \
+   ~/.local/bin/andrei-lid-close ~/.local/bin/andrei-lid-open
 omarchy branding screensaver reset             # stock screensaver text
 omarchy plymouth reset                         # stock boot screen
 ```
 
 Also delete the `"system.screensaver"` line from
-`~/.config/omarchy/extensions/omarchy-menu.jsonc`.
+`~/.config/omarchy/extensions/omarchy-menu.jsonc` and the lid switch block
+from `~/.config/hypr/bindings.lua`.
 
 ## License
 

@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# Lid opened: turn the laptop panel back on (andrei-lid-close may have blanked
+# it in Stay Awake mode), then run Omarchy's clamshell reconciliation.
+
+internal=$(omarchy-hyprland-monitor-laptop)
+if [[ $internal =~ ^[A-Za-z0-9._-]+$ ]]; then
+  hyprctl dispatch "hl.dsp.dpms({ action = \"enable\", monitor = \"$internal\" })" >/dev/null 2>&1 || true
+fi
+
+omarchy-hyprland-monitor-clamshell

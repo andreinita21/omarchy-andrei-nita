@@ -103,16 +103,39 @@ open(path, "w", encoding="utf-8").write(f"{body}\n\n  // ANDREI NITA screensaver
 EOF
 }
 
+# Routes the lid switch through andrei-lid-close/-open, so with Stay Awake on
+# closing the lid blanks the panel instead of suspending. Leaves the file alone
+# if it already binds them.
+add_lid_bindings() {
+  local bindings="${XDG_CONFIG_HOME:-$HOME/.config}/hypr/bindings.lua"
+  [[ -f $bindings ]] || return 0
+  grep -q 'andrei-lid-close' "$bindings" && return
+  cp "$bindings" "$bindings.bak.$(date +%s)"
+  cat >>"$bindings" <<'LUA'
+
+-- ANDREI NITA: lid switch with Stay Awake (coffee) support -- with it on,
+-- closing the lid blanks the panel and the machine keeps running instead of
+-- suspending (andrei.idle holds the logind lid inhibitor).
+hl.unbind("switch:on:Lid Switch")
+hl.unbind("switch:off:Lid Switch")
+o.bind("switch:on:Lid Switch", nil, "andrei-lid-close", { locked = true })
+o.bind("switch:off:Lid Switch", nil, "andrei-lid-open", { locked = true })
+LUA
+  hyprctl reload >/dev/null 2>&1 || true
+}
+
 install_screensaver() {
   say "Installing screensaver"
   mkdir -p "$bin_dir" "$config/branding"
-  install -m 755 "$repo/screensaver/andrei-screensaver" "$repo/screensaver/andrei-launch-screensaver" "$bin_dir/"
+  install -m 755 "$repo/screensaver/andrei-screensaver" "$repo/screensaver/andrei-launch-screensaver" \
+    "$repo/screensaver/andrei-lid-close" "$repo/screensaver/andrei-lid-open" "$bin_dir/"
   if [[ -f $config/branding/screensaver.txt ]]; then
     cp "$config/branding/screensaver.txt" "$config/branding/screensaver.txt.bak.$(date +%s)"
   fi
   cp "$repo/screensaver/screensaver.txt" "$config/branding/screensaver.txt"
   install_plugin "$repo/screensaver/andrei.idle"
   add_menu_override
+  add_lid_bindings
   restart_shell=1
   case ":$PATH:" in
     *":$bin_dir:"*) ;;

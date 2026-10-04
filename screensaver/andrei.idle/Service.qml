@@ -299,6 +299,17 @@ Item {
     onExited: function(exitCode, exitStatus) { root.logEvent("process-exit", "wake exitCode=" + exitCode + " status=" + exitStatus) }
   }
 
+  // While Stay Awake is on, keep logind from acting on the lid so closing it
+  // does not suspend; andrei-lid-close blanks the panel instead. Stopping the
+  // process (toggle off, shell exit) releases the inhibitor.
+  Process {
+    id: lidInhibitor
+    running: root.stayAwakeStateLoaded && root.stayAwake
+    command: ["systemd-inhibit", "--what=handle-lid-switch", "--who=Stay Awake",
+      "--why=Coffee toggle: keep running with the lid closed", "--mode=block", "sleep", "infinity"]
+    onRunningChanged: root.logEvent("lid-inhibitor", running ? "held" : "released")
+  }
+
   Process {
     id: stayAwakeStateProbe
     command: ["bash", "-c", "mkdir -p \"$HOME/.local/state/omarchy/indicators\"; if [[ -f $HOME/.local/state/omarchy/indicators/stay-awake ]]; then echo yes; else echo no; fi"]
